@@ -1,44 +1,8 @@
 #root {
-  max-width: 1280px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }
 
 body {
@@ -49,33 +13,196 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.App {
-  text-align: center;
-  margin-top: 20px;
-}
-
 table {
   border-collapse: collapse;
-  width: 98%; /* Ajusta el ancho de la tabla según sea necesario */
+  width: 98%;
   margin: auto;
 }
 
 th,
 td {
   border: 1px solid #ddd;
-  padding: 25px; /* Ajusta el padding para hacer las celdas más grandes */
+  padding: 25px;
   text-align: center;
-  width: 50px; /* Fija el ancho de las celdas al tamaño de la celda en la columna 10 */
+  width: 50px;
 }
 
 th {
   background-color: #f2f2f2;
 }
 
-/* Estilos para las celdas de la primera fila y primera columna */
 th:first-child,
 td:first-child,
-th:nth-child(n + 2) { /* Añade este selector para las celdas de la primera fila (excluyendo la primera) */
+th:nth-child(n + 2) {
   background-color: blue;
   color: white;
 }
+
+.destroyed-ships-container{
+  margin-top: 10px;
+  color: black;
+}
+
+.input-container button {
+  background-color: blue;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-left: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+
+  &:hover {
+    background-color: blue;
+    color: #fff;
+  }
+
+  &.restart {
+    background-color: #ff6666;
+  }
+}
+
+td.O,
+td.X {
+  color: black;
+}
+
+.App h2,
+.input-container label {
+  color: rgba(0, 0, 0, 0.123);
+}
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+.App h2,
+.App p {
+  color: black;
+}
+
+
+
+.alert {
+  background-color: rgb(105, 124, 223);
+  color: #9aa3ca;
+  padding: 15px;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.close-button {
+  background-color: #007bff; /* Color azul */
+  color: #fff; /* Texto blanco */
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.close-button:hover {
+  background-color: #0056b3; /* Cambio de color al pasar el ratón */
+}
+.alert strong {
+  font-weight: bold;
+  color: #000000; /* Puedes ajustar el color según tus preferencias */
+}
+
+/* App.css */
+
+.input-container label {
+  display: block;
+  margin-bottom: 10px; /* Ajusta el margen inferior según tus preferencias */
+  color: black;
+}
+
+.input-container input {
+  width: 150px;
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  margin-bottom: 10px; /* Ajusta el margen inferior según tus preferencias */
+}
+
+.input-container button {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-left: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.input-container button:hover {
+  background-color: #0056b3;
+}
+.input-label {
+  margin-bottom: 10px; /* Ajusta el margen entre el texto y el campo de entrada */
+  color: black;
+}
+
+

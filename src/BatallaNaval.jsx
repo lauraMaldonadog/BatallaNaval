@@ -1,179 +1,280 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-const numRows = 10;
-const numCols = 10;
+const numFilas = 10;
+const numColumnas = 10;
 
-const rows = Array.from({ length: numRows }, (_, i) => String.fromCharCode('A'.charCodeAt(0) + i));
-const columns = Array.from({ length: numCols }, (_, i) => i + 1);
+const filas = Array.from({ length: numFilas }, (_, i) => String.fromCharCode('A'.charCodeAt(0) + i));
+const columnas = Array.from({ length: numColumnas }, (_, i) => i + 1);
 
-const shipSize = 4; // Tamaño fijo de los barcos
-const totalShips = 5; // Número total de barcos
+const tamanoBarco = 4; 
+const barcosTotales = 5; 
 
-function App() {
-  const [board, setBoard] = useState(generateEmptyBoard());
-  const [hiddenBoard, setHiddenBoard] = useState(generateHiddenBoard());
-  const [attackCommand, setAttackCommand] = useState('');
-  const [message, setMessage] = useState('');
+const Alerta = ({ mensaje, onClose }) => (
+  <div className="alerta">
+    <p>
+      <strong>{mensaje}</strong>
+    </p>
+    <button className="close-button" onClick={onClose}>
+      Cerrar
+    </button>
+  </div>
+);
 
-  useEffect(() => {
-    // Al entrar en la vista, generamos posiciones ocultas de los barcos
-    const newHiddenBoard = generateHiddenBoard();
-    setHiddenBoard(newHiddenBoard);
-  }, []);
+const BatallaNaval = () => {
+  //Funcion que devuelve un tablero vacio 
+  const generarTableroVacio = () => Array.from({ length: numFilas }, () => Array(numColumnas).fill(null));
+ 
+  //Genera un nuevo tablero con posiciones aleatorias de barcos ocultos.
+  //Utiliza funciones auxiliares para verificar la colocación y superposición de los barcos.
+  const generarTableroOculto = () => {
+    const nuevoTableroOculto = generarTableroVacio();
 
-  useEffect(() => {
-    // Cada vez que cambia el comando de ataque, intentamos realizar el ataque
-    if (attackCommand) {
-      handleAttack();
-    }
-  }, [attackCommand]);
+    for (let numeroBarco = 1; numeroBarco <= barcosTotales; numeroBarco++) {
+      let colocado = false;
 
-  function generateEmptyBoard() {
-    return Array.from({ length: numRows }, () => Array(numCols).fill(null));
-  }
-
-  function generateHiddenBoard() {
-    const newHiddenBoard = generateEmptyBoard();
-
-    for (let shipNumber = 1; shipNumber <= totalShips; shipNumber++) {
-      let placed = false;
-
-      while (!placed) {
-        const randomRow = Math.floor(Math.random() * numRows);
-        const randomCol = Math.floor(Math.random() * numCols);
-        const isHorizontal = Math.random() < 0.5;
+      while (!colocado) {
+        const filaAleatoria = Math.floor(Math.random() * numFilas);
+        const columnaAleatoria = Math.floor(Math.random() * numColumnas);
+        const esHorizontal = Math.random() < 0.5;
 
         if (
-          checkPlacement(newHiddenBoard, randomRow, randomCol, shipSize, isHorizontal) &&
-          !checkOverlap(newHiddenBoard, randomRow, randomCol, shipSize, isHorizontal)
+          verificarColocacion(nuevoTableroOculto, filaAleatoria, columnaAleatoria, tamanoBarco, esHorizontal) &&
+          !verificarSuperposicion(nuevoTableroOculto, filaAleatoria, columnaAleatoria, tamanoBarco, esHorizontal)
         ) {
-          placeShip(newHiddenBoard, randomRow, randomCol, shipSize, isHorizontal);
-          placed = true;
+          colocarBarco(nuevoTableroOculto, filaAleatoria, columnaAleatoria, tamanoBarco, esHorizontal);
+          colocado = true;
         }
       }
     }
 
-    return newHiddenBoard;
-  }
+    return nuevoTableroOculto;
+  };
 
-  function checkPlacement(board, row, col, size, isHorizontal) {
-    if (isHorizontal) {
-      for (let i = 0; i < size; i++) {
-        if (col + i >= numCols || board[row][col + i] !== null) {
+  //Verifica si es posible colocar un barco en una posición específica (fila, columna)
+  // de manera horizontal o vertical.
+  const verificarColocacion = (tablero, fila, columna, tamano, esHorizontal) => {
+    if (esHorizontal) {
+      for (let i = 0; i < tamano; i++) {
+        if (columna + i >= numColumnas || tablero[fila][columna + i] !== null) {
           return false;
         }
       }
     } else {
-      for (let i = 0; i < size; i++) {
-        if (row + i >= numRows || board[row + i][col] !== null) {
+      for (let i = 0; i < tamano; i++) {
+        if (fila + i >= numFilas || tablero[fila + i][columna] !== null) {
           return false;
         }
       }
     }
 
     return true;
-  }
+  };
 
-  function checkOverlap(board, row, col, size, isHorizontal) {
-    if (isHorizontal) {
-      for (let i = 0; i < size; i++) {
-        if (col + i >= numCols || board[row][col + i] === 'S') {
+  //Verifica si hay superposición de barcos en una posición específica (fila, columna) 
+  //para evitar que se solapen.
+  const verificarSuperposicion = (tablero, fila, columna, tamano, esHorizontal) => {
+    if (esHorizontal) {
+      for (let i = 0; i < tamano; i++) {
+        if (columna + i >= numColumnas || tablero[fila][columna + i] === 'S') {
           return true;
         }
       }
     } else {
-      for (let i = 0; i < size; i++) {
-        if (row + i >= numRows || board[row + i][col] === 'S') {
+      for (let i = 0; i < tamano; i++) {
+        if (fila + i >= numFilas || tablero[fila + i][columna] === 'S') {
           return true;
         }
       }
     }
 
     return false;
-  }
+  };
 
-  function placeShip(board, row, col, size, isHorizontal) {
-    if (isHorizontal) {
-      for (let i = 0; i < size; i++) {
-        board[row][col + i] = 'S'; // 'S' representa una parte del barco
+  //Coloca un barco en el tablero en una posición específica (fila, columna) de
+  // manera horizontal o vertical.
+  const colocarBarco = (tablero, fila, columna, tamano, esHorizontal) => {
+    if (esHorizontal) {
+      for (let i = 0; i < tamano; i++) {
+        tablero[fila][columna + i] = 'S'; // 'S' representa una parte del barco
       }
     } else {
-      for (let i = 0; i < size; i++) {
-        board[row + i][col] = 'S';
+      for (let i = 0; i < tamano; i++) {
+        tablero[fila + i][columna] = 'S';
       }
     }
-  }
+  };
 
-  function handleAttack() {
+  //Valida el comando de ataque, realiza el ataque y actualiza el tablero
+  // y mensajes según el resultado del ataque.
+  const manejarAtaque = () => {
     // Verificar si el comando de ataque es válido
     const regex = /^[A-Ja-j]([1-9]|10)$/;
-    if (!regex.test(attackCommand)) {
-      setMessage('Comando de ataque no válido. Utilice un formato como A1, B2, C3.');
+    if (!regex.test(comandoAtaque)) {
+      setMensaje('Comando de ataque no válido. Utilice un formato como A1, B2, C3.');
       return;
     }
 
-    // Convertir el comando a coordenadas de matriz
-    const col = parseInt(attackCommand.slice(1)) - 1;
-    const row = attackCommand.charCodeAt(0) - 'A'.charCodeAt(0);
+    // Convierte el comando a coordenadas de matriz
+    const columna = parseInt(comandoAtaque.slice(1)) - 1;
+    const fila = comandoAtaque.charCodeAt(0) - 'A'.charCodeAt(0);
 
-    // Realizar el ataque
-    // Realizar el ataque
-    if (hiddenBoard[row][col] === 'S') {
-      setMessage('¡Ataque exitoso! Barco alcanzado.');
-      setBoard(prevBoard => {
-        const updatedBoard = prevBoard.map((rowArray, rowIndex) =>
-          rowArray.map((cell, colIndex) =>
-            rowIndex === row && colIndex === col ? 'O' : cell
-          )
+    // Realiza el ataque
+    if (tableroOculto[fila][columna] === 'S') {
+      setMensaje('¡Ataque exitoso! Barco alcanzado.');
+
+      setTablero((tableroPrevio) => {
+        const tableroActualizado = tableroPrevio.map((filaArray, indiceFila) =>
+          filaArray.map((celda, indiceColumna) => {
+            if (indiceFila === fila && indiceColumna === columna) {
+              // Verifica si hay 4 "O" consecutivas horizontalmente
+              let consecutivoHorizontal = true;
+              for (let i = 0; i < tamanoBarco; i++) {
+                if (tableroPrevio[fila][indiceColumna + i] !== 'O') {
+                  consecutivoHorizontal = false;
+                  break;
+                }
+              }
+
+              // Verifica si hay 4 "O" consecutivas verticalmente
+              let consecutivoVertical = true;
+              for (let i = 0; i < tamanoBarco; i++) {
+                if (tableroPrevio[indiceFila + i][columna] !== 'O') {
+                  consecutivoVertical = false;
+                  break;
+                }
+              }
+
+              if (consecutivoHorizontal || consecutivoVertical) {
+                setBarcosDestruidos((contadorPrevio) => Math.floor(contadorPrevio + 0.25));
+              }
+
+              return 'O';
+            } else {
+              return celda;
+            }
+          })
         );
-        return updatedBoard;
+
+        // Verifica si hay barcos destruidos después de cada tiro acertado
+        const contadorDestruidos = tableroActualizado.flat().filter((celda) => celda === 'O').length / tamanoBarco;
+        setBarcosDestruidos(Math.floor(contadorDestruidos));
+
+        return tableroActualizado;
       });
     } else {
-      setMessage('Ataque fallido. No hay barco en esta posición.');
-      setBoard(prevBoard => {
-        const updatedBoard = [...prevBoard];
-        // Solo actualizar con 'X' si la celda no ha sido atacada previamente (no es 'O')
-        if (prevBoard[row][col] !== 'O') {
-          updatedBoard[row] = [...prevBoard[row]];
-          updatedBoard[row][col] = 'X'; // Marcar con 'X' para un ataque fallido
+      setMensaje('Ataque fallido. No hay barco en esta posición.');
+      setTablero((tableroPrevio) => {
+        const tableroActualizado = [...tableroPrevio];
+        // Solo actualiza con 'X' si la celda no ha sido atacada previamente (no es 'O')
+        if (tableroPrevio[fila][columna] !== 'O') {
+          tableroActualizado[fila] = [...tableroPrevio[fila]];
+          tableroActualizado[fila][columna] = 'X'; // se marca una 'X' para un ataque fallido
         }
-        return updatedBoard;
+        return tableroActualizado;
       });
     }
-    setAttackCommand('');
-  }
+
+    setComandoAtaque('');
+  };
+
+  // Reinicia el juego generando un nuevo tablero y posiciones ocultas de los barcos
+  const reiniciarJuego = () => {
+    const nuevoTablero = generarTableroVacio();
+    const nuevoTableroOculto = generarTableroOculto();
+    setTablero(nuevoTablero);
+    setTableroOculto(nuevoTableroOculto);
+    setComandoAtaque('');
+    setBarcosDestruidos(0);
+    setMensaje('');
+    setMostrarAlerta(false);
+  };
+
+  const [tablero, setTablero] = useState(generarTableroVacio());
+  const [tableroOculto, setTableroOculto] = useState(generarTableroOculto());
+  const [comandoAtaque, setComandoAtaque] = useState('');
+  const [barcosDestruidos, setBarcosDestruidos] = useState(0);
+  const [mensaje, setMensaje] = useState('');
+  const [ganador, setGanador] = useState(false);
+
+  useEffect(() => {
+    // se  genera las  posiciones ocultas de los barcos al ingresar a la vista
+    const nuevoTableroOculto = generarTableroOculto();
+    setTableroOculto(nuevoTableroOculto);
+  }, []);
+
+  const [mostrarAlerta, setMostrarAlerta] = useState(false);
+  const cerrarAlerta = () => {
+    // Restablece el juego a su estado inicial
+    const nuevoTablero = generarTableroVacio();
+    const nuevoTableroOculto = generarTableroOculto();
+
+    setTablero(nuevoTablero);
+    setTableroOculto(nuevoTableroOculto);
+    setComandoAtaque('');
+    setBarcosDestruidos(0);
+    setMensaje('');
+
+    setMostrarAlerta(false);
+  };
+
+  useEffect(() => {
+    // Verifica si se alcanzó el límite de 5 barcos destruidos
+    if (barcosDestruidos === 5) {
+      setMensaje('¡Felicidades! Has destruido 5 barcos. Juego terminado.');
+      setGanador(true);
+      setMostrarAlerta(true);
+    }
+  }, [barcosDestruidos]);
+
   return (
     <div className="App">
       <h2>Batalla Naval</h2>
 
-      <div className="input-container">
-        <label>
-          Ingrese el comando de ataque (Ejemplo: A1, B2, C3):
-          <input type="text" value={attackCommand} onChange={(e) => setAttackCommand(e.target.value.toUpperCase())} />
-        </label>
-        <button onClick={handleAttack}>Atacar</button>
+      {barcosDestruidos < 5 ? (
+        <div className="input-container">
+          <div className="input-label">
+            <label>
+              Ingrese el comando de ataque
+            </label>
+          </div>
+          <input
+            type="text"
+            value={comandoAtaque}
+            onChange={(e) => setComandoAtaque(e.target.value.toUpperCase())}
+          />
+          <button onClick={manejarAtaque}>Atacar</button>
+          <button className="restart-button" onClick={reiniciarJuego}>Reiniciar</button>
+        </div>
+      ) : (
+        <div>
+          {mostrarAlerta && <Alerta mensaje="¡Felicidades! Eres el ganador." onClose={cerrarAlerta} />}
+        </div>
+      )}
+
+      <div className="destroyed-ships-container">
+        <p>Barcos destruidos: {barcosDestruidos}</p>
       </div>
 
       <table>
         <thead>
           <tr>
             <th></th>
-            {columns.map((col) => (
+            {columnas.map((col) => (
               <th key={col}>{col}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, rowIndex) => (
-            <tr key={row}>
-              <th>{row}</th>
-              {columns.map((col, colIndex) => (
-                <td key={`${row}${col}`}>
-                  {/* Mostrar barcos ocultos solo para propósitos de desarrollo */}
-                  {hiddenBoard[rowIndex][colIndex] === 'S' ? 'S' : ''}
-                  {/* Mostrar ataques en el tablero */}
-                  {board[rowIndex][colIndex] === 'O' ? 'O' : board[rowIndex][colIndex] === 'X' ? 'X' : ''}
+          {filas.map((fila, indiceFila) => (
+            <tr key={fila}>
+              <th>{fila}</th>
+              {columnas.map((col, indiceColumna) => (
+                <td key={`${fila}${col}`} className={tablero[indiceFila][indiceColumna] === 'O' ? 'O' : tablero[indiceFila][indiceColumna] === 'X' ? 'X' : ''}>
+                  {/* Muestra los barcos ocultos solo para propósitos de desarrollo */}
+                  {/*tableroOculto[indiceFila][indiceColumna] === 'S' && tablero[indiceFila][indiceColumna] !== 'O' ? 'S' : ''*/}
+                  {/* Muestra los ataques en el tablero */}
+                  {tablero[indiceFila][indiceColumna] === 'O' ? 'O' : tablero[indiceFila][indiceColumna] === 'X' ? 'X' : ''}
                 </td>
               ))}
             </tr>
@@ -184,4 +285,4 @@ function App() {
   );
 }
 
-export default App;
+export default BatallaNaval;
